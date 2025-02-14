@@ -1,13 +1,13 @@
 {
-    "name": "ms-compras",
+    "name": "ms-saga",
     "version": "1.0.0",
-    "description": "Purchase Microservice",
+    "description": "Saga Orchestrator Microservice",
     "main": "src/server.js",
     "scripts": {
       "start": "node src/server.js"
     },
     "dependencies": {
       "express": "^4.17.1",
-      "mongoose": "^6.0.12"
+      "axios": "^0.21.1"
     }
   }

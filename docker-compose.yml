@@ -1,1 +1,105 @@
- 
+# Este archivo configura y orquesta todos los servicios del proyecto utilizando Docker Compose. 
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  ms-catalogo:
+    build: ./ms-catalogo
+    ports:
+      - "3001:3001"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/catalog
+
+  ms-compras:
+    build: ./ms-compras
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/purchases
+
+  ms-pagos:
+    build: ./ms-pagos
+    ports:
+      - "3003:3003"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/payments
+
+  ms-inventario:
+    build: ./ms-inventario
+    ports:
+      - "3004:3004"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/inventory
+
+  ms-saga:
+    build: ./ms-saga
+    ports:
+      - "3005:3005"
+    depends_on:
+      ms-inventario:
+        condition: service_started
+      ms-pagos:
+        condition: service_started
+      ms-compras:
+        condition: service_started
+      ms-catalogo:
+        condition: service_started
+
+volumes:
+  mongo-data:
+
+
+# mongo: Servicio de MongoDB que almacena los datos de la aplicación.
+# -- Usa la imagen oficial de MongoDB.
+# -- Expone el puerto 27017.
+# -- Persiste los datos en un volumen llamado mongo-data.
+# -- Incluye un healthcheck para verificar que MongoDB esté saludable.
+# ms-catalogo: Microservicio de catálogo.
+# -- Construye la imagen desde el directorio ./ms-catalogo.
+# -- Expone el puerto 3001.
+# -- Depende de MongoDB y espera a que esté saludable antes de iniciar.
+# -- Usa la variable de entorno MONGO_URI para conectarse a MongoDB.
+# ms-compras: Microservicio de compras.
+# -- Construye la imagen desde el directorio ./ms-compras.
+# -- Expone el puerto 3002.
+# -- Depende de MongoDB y espera a que esté saludable antes de iniciar.
+# -- Usa la variable de entorno MONGO_URI para conectarse a MongoDB.
+# ms-pagos: Microservicio de pagos.
+# -- Construye la imagen desde el directorio ./ms-pagos.
+# -- Expone el puerto 3003.
+# -- Depende de MongoDB y espera a que esté saludable antes de iniciar.
+# -- Usa la variable de entorno MONGO_URI para conectarse a MongoDB.
+# ms-inventario: Microservicio de inventario.
+# -- Construye la imagen desde el directorio ./ms-inventario.
+# -- Expone el puerto 3004.
+# -- Depende de MongoDB y espera a que esté saludable antes de iniciar.
+# -- Usa la variable de entorno MONGO_URI para conectarse a MongoDB.
+# ms-saga: Microservicio de Saga (coordinador de transacciones).
+# -- Construye la imagen desde el directorio ./ms-saga.
+# -- Expone el puerto 3005.
+# -- Depende de los microservicios de inventario, pagos, compras y catálogo, y espera a que estén iniciados antes de iniciar.
+# volumes: Define un volumen (mongo-data) para persistir los datos de MongoDB.

@@ -1,1 +1,13 @@
- 
+{
+    "name": "ms-pagos",
+    "version": "1.0.0",
+    "description": "Payment Microservice",
+    "main": "src/server.js",
+    "scripts": {
+      "start": "node src/server.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1",
+      "mongoose": "^6.0.12"
+    }
+  }
